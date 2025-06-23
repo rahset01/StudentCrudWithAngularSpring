@@ -1,0 +1,63 @@
+<div class="login-container">
+  <h2>Login</h2>
+
+  <form #loginForm="ngForm" (ngSubmit)="onLogin(loginForm)">
+    <div>
+      <label><span class="required">*</span> Email</label>
+      <input
+        type="email"
+        name="username"
+        [(ngModel)]="username"
+        required
+        appStrictEmail
+        #usernameField="ngModel"
+      />
+      <p class="error" *ngIf="usernameField.errors?.['required'] && usernameField.touched">
+        Email is required
+      </p>
+      <p class="error" *ngIf="usernameField.errors?.['strictEmail'] && usernameField.touched">
+        Enter a valid email address
+      </p>
+    </div>
+
+    <div>
+  <label><span class="required">*</span> Password</label>
+  <input
+    type="password"
+    name="password"
+    [(ngModel)]="password"
+    required
+    minlength="6"
+    #passwordField="ngModel"
+  />
+
+  <!-- Required -->
+  <p class="error" *ngIf="passwordField.errors?.['required'] && passwordField.touched">
+    Password is required
+  </p>
+
+  <!-- Min length -->
+  <p class="error" *ngIf="passwordField.errors?.['minlength'] && passwordField.touched">
+    Password must be at least 6 characters
+  </p>
+
+  <!-- Includes username -->
+  <p class="error" *ngIf="includesUsernameError && passwordField.touched">
+    Password should not contain your email
+  </p>
+
+  <!-- Missing special character -->
+  <p class="error" *ngIf="missingSpecialCharError && passwordField.touched">
+    Password must include at least one special character
+  </p>
+  </div>
+
+    <button type="submit">Login</button>
+  </form>
+
+  <p *ngIf="loginFailed" style="color: red;">Invalid username or password</p>
+
+  <p class="register-link">
+    Don't have an account? <a routerLink="/register">Register here</a>
+  </p>
+</div>

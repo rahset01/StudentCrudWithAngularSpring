@@ -1,0 +1,19 @@
+<div class="student-form">
+  <h2>{{ isEdit ? 'Edit' : 'Add' }} Student</h2>
+  <form (ngSubmit)="onSubmit()" #studentForm="ngForm">
+    <div>
+      <label>Name</label>
+      <input type="text" name="name" [(ngModel)]="student.name" required />
+    </div>
+    <div>
+      <label>Email</label>
+      <input type="email" name="email" [(ngModel)]="student.email" required />
+    </div>
+    <div>
+      <label>Course</label>
+      <input type="text" name="course" [(ngModel)]="student.course" required />
+    </div>
+    <button type="submit" [disabled]="!studentForm.valid">Save</button>
+    <button type="button" (click)="onCancel()">Cancel</button>
+  </form>
+</div>
