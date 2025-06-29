@@ -1,10 +1,9 @@
-import { Component } from '@angular/core';
+// student-list.component.ts
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { StudentService } from '../../services/student.service';
+import { RouterModule, Router } from '@angular/router';
 import { Student } from '../../models/student.model';
-import { Router } from '@angular/router';
-
+import { StudentService } from '../../services/student.service';
 
 @Component({
   selector: 'app-student-list',
@@ -13,8 +12,10 @@ import { Router } from '@angular/router';
   templateUrl: './student-list.component.html',
   styleUrls: ['./student-list.component.scss']
 })
-export class StudentListComponent {
+export class StudentListComponent implements OnInit {
   students: Student[] = [];
+  isLoading = true;
+  errorMessage = '';
 
   constructor(
     private studentService: StudentService,
@@ -26,7 +27,18 @@ export class StudentListComponent {
   }
 
   loadStudents(): void {
-    this.students = this.studentService.getStudents();
+    this.isLoading = true;
+    this.studentService.getStudents().subscribe({
+      next: (data) => {
+        this.students = data;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching students:', err);
+        this.errorMessage = 'Failed to load students.';
+        this.isLoading = false;
+      }
+    });
   }
 
   onAdd(): void {
@@ -38,7 +50,12 @@ export class StudentListComponent {
   }
 
   onDelete(id: number): void {
-    this.studentService.deleteStudent(id);
-    this.loadStudents(); // Refresh list
+    this.studentService.deleteStudent(id).subscribe({
+      next: () => this.loadStudents(),
+      error: (err) => {
+        console.error('Delete failed:', err);
+        this.errorMessage = 'Failed to delete student.';
+      }
+    });
   }
 }

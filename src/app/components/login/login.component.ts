@@ -1,61 +1,42 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule, NgForm } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
-import { StrictEmailDirective } from '../../directives/strict-email.directive';
+import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
+import { FormsModule } from '@angular/forms'; // ✅ Import FormsModule
+import { CommonModule } from '@angular/common'; // ✅ For ngIf, ngFor, etc.
 
 @Component({
   selector: 'app-login',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, StrictEmailDirective],
+  standalone: true, // ✅ Ensure standalone is enabled
+  imports: [CommonModule, FormsModule], // ✅ Add FormsModule here
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent {
-  username = '';
-  password = '';
-  loginFailed = false;
+  email: string = '';
+  password: string = '';
+  loginFailed: boolean = false;
 
-  // Custom validation flags
-  includesUsernameError = false;
-  missingSpecialCharError = false;
+  includesEmailError: boolean = false;
+  missingSpecialCharError: boolean = false;
 
-  constructor(private router: Router) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
-  onLogin(form: NgForm): void {
-    // Reset custom errors
-    this.includesUsernameError = false;
-    this.missingSpecialCharError = false;
+  onSubmit(): void {
+    this.includesEmailError = this.password.toLowerCase().includes(this.email.toLowerCase());
+    this.missingSpecialCharError = !/[!@#$%^&*(),.?":{}|<>]/.test(this.password);
 
-    if (form.invalid) {
-      Object.values(form.controls).forEach(control => control.markAsTouched());
+    if (this.includesEmailError || this.missingSpecialCharError) {
       return;
     }
 
-    // Custom validations
-    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
-
-    if (
-      this.username &&
-      this.password.toLowerCase().includes(this.username.toLowerCase())
-    ) {
-      this.includesUsernameError = true;
-    }
-
-    if (!specialCharRegex.test(this.password)) {
-      this.missingSpecialCharError = true;
-    }
-
-    // If any custom error, prevent login
-    if (this.includesUsernameError || this.missingSpecialCharError) {
-      return;
-    }
-
-    // ✅ Login logic
-    if (this.username === 'admin@gmail.com' && this.password === 'rahul@123') {
-      this.router.navigate(['/students']);
-    } else {
-      this.loginFailed = true;
-    }
+    this.authService.login(this.email, this.password).subscribe({
+      next: () => {
+        this.loginFailed = false;
+        this.router.navigate(['/students']);
+      },
+      error: () => {
+        this.loginFailed = true;
+      }
+    });
   }
 }

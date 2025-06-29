@@ -1,37 +1,50 @@
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { Student } from '../models/student.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class StudentService {
-  private students: Student[] = [
-    { id: 1, name: 'Rahul', email: 'rahul@example.com', course: 'Angular' },
-    { id: 2, name: 'Asha', email: 'asha@example.com', course: 'Spring Boot' },
-    { id: 3, name: 'Vikram', email: 'vikram@example.com', course: 'Java' }
-  ];
+  private apiUrl = 'http://localhost:8080/api/students';
 
-  getStudents(): Student[] {
-    return this.students;
+  constructor(private http: HttpClient) {}
+
+  private getAuthHeaders(): HttpHeaders {
+    const token = sessionStorage.getItem('token');
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+    });
   }
 
-  addStudent(student: Student): void {
-    student.id = this.students.length + 1;
-    this.students.push(student);
+  getStudents(): Observable<Student[]> {
+    return this.http.get<Student[]>(this.apiUrl, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
-  updateStudent(student: Student): void {
-    const index = this.students.findIndex(s => s.id === student.id);
-    if (index !== -1) {
-      this.students[index] = student;
-    }
+  getStudentById(id: number): Observable<Student> {
+    return this.http.get<Student>(`${this.apiUrl}/${id}`, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
-  deleteStudent(id: number): void {
-    this.students = this.students.filter(student => student.id !== id);
+  addStudent(student: Student): Observable<Student> {
+    return this.http.post<Student>(this.apiUrl, student, {
+      headers: this.getAuthHeaders(),
+    });
   }
 
-  getStudentById(id: number): Student | undefined {
-    return this.students.find(s => s.id === id);
+  updateStudent(student: Student): Observable<Student> {
+    return this.http.put<Student>(`${this.apiUrl}/${student.id}`, student, {
+      headers: this.getAuthHeaders(),
+    });
+  }
+
+  deleteStudent(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`, {
+      headers: this.getAuthHeaders(),
+    });
   }
 }

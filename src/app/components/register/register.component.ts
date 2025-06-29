@@ -1,61 +1,62 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { NgForm, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { FormsModule, NgForm } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [FormsModule, CommonModule],
   templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss']
+  styleUrls: ['./register.component.scss'],
 })
 export class RegisterComponent {
-  name = '';
-  email = '';
-  password = '';
+  name: string = '';
+  email: string = '';
+  password: string = '';
 
-  includesNameError = false;
-  missingSpecialCharError = false;
+  includesNameError: boolean = false;
+  missingSpecialCharError: boolean = false;
 
-  constructor(private router: Router) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   onRegister(form: NgForm): void {
-    // Reset custom error flags
+    if (form.invalid) return;
+
+    // Reset validation flags
     this.includesNameError = false;
     this.missingSpecialCharError = false;
 
-    if (form.invalid) {
-      Object.values(form.controls).forEach(control => {
-        control.markAsTouched();
-      });
-      return;
-    }
-
-    // Custom password validation
-    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
-    const passwordLower = this.password.toLowerCase();
-
-    if (
-      (this.name && passwordLower.includes(this.name.toLowerCase())) ||
-      (this.email && passwordLower.includes(this.email.toLowerCase()))
-    ) {
+    // Validate that password does not include name or email
+    if (this.password.includes(this.name) || this.password.includes(this.email)) {
       this.includesNameError = true;
     }
 
-    if (!specialCharRegex.test(this.password)) {
+    // Validate special character in password
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(this.password)) {
       this.missingSpecialCharError = true;
     }
 
+    // Stop if any custom validation fails
     if (this.includesNameError || this.missingSpecialCharError) {
       return;
     }
 
-    // ✅ Success logic (you can replace with API call)
-    alert('Registration successful!');
-    this.router.navigate(['/']);
+    // Call register API
+    this.authService.register(this.name, this.email, this.password).subscribe({
+      next: () => {
+        alert('Registration successful!');
+        this.router.navigate(['/login']);
+      },
+      error: (err) => {
+        console.error('Registration failed', err);
+        alert('Registration failed. Please try again.');
+      },
+    });
   }
+
   onCancel(): void {
-    this.router.navigate(['/']);
+    this.router.navigate(['/login']);
   }
 }

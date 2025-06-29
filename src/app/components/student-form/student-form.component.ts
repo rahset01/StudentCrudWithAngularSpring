@@ -23,17 +23,20 @@ export class StudentFormComponent {
   ) {}
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      const id = +params['id'];
-      if (id) {
-        const existing = this.studentService.getStudentById(id);
-        if (existing) {
+  this.route.queryParams.subscribe(params => {
+    const id = params['id'];
+    if (id) {
+      this.studentService.getStudentById(+id).subscribe({
+        next: (existing) => {
           this.student = { ...existing };
-          this.isEdit = true;
+        },
+        error: (err) => {
+          console.error('Failed to fetch student', err);
         }
-      }
-    });
-  }
+      });
+    }
+  });
+}
 
   onSubmit(): void {
     if (this.isEdit) {

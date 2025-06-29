@@ -1,0 +1,8 @@
+<nav class="navbar">
+  <a routerLink="/students">Student List</a>
+  <a routerLink="/register">Register</a>
+
+  <ng-container *ngIf="authService.isLoggedIn()">
+    <button (click)="logout()">Logout</button>
+  </ng-container>
+</nav>
