@@ -1,50 +1,66 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, ActivatedRoute, RouterModule } from '@angular/router';
-import { StudentService } from '../../services/student.service';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Student } from '../../models/student.model';
+import { StudentService } from '../../services/student.service';
 
 @Component({
   selector: 'app-student-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './student-form.component.html',
   styleUrls: ['./student-form.component.scss']
 })
-export class StudentFormComponent {
-  student: Student = { id: 0, name: '', email: '', course: '' };
-  isEdit = false;
+export class StudentFormComponent implements OnInit {
+  student: Student = {
+    id: 0,
+    name: '',
+    email: '',
+    course: ''
+  };
+
+  isEdit: boolean = false;
+  errorMessage: string = '';
 
   constructor(
-    private studentService: StudentService,
+    private route: ActivatedRoute,
     private router: Router,
-    private route: ActivatedRoute
+    private studentService: StudentService
   ) {}
 
   ngOnInit(): void {
-  this.route.queryParams.subscribe(params => {
-    const id = params['id'];
+    const id = this.route.snapshot.queryParamMap.get('id');
     if (id) {
+      this.isEdit = true;
       this.studentService.getStudentById(+id).subscribe({
-        next: (existing) => {
-          this.student = { ...existing };
-        },
+        next: (data) => (this.student = data),
         error: (err) => {
-          console.error('Failed to fetch student', err);
+          console.error('Error loading student:', err);
+          this.errorMessage = 'Failed to load student.';
         }
       });
     }
-  });
-}
+  }
 
   onSubmit(): void {
     if (this.isEdit) {
-      this.studentService.updateStudent(this.student);
+      this.studentService.updateStudent(this.student).subscribe({
+        next: () => this.router.navigate(['/students']),
+        error: (err) => {
+          console.error('Update failed:', err);
+          this.errorMessage = 'Failed to update student.';
+        }
+      });
     } else {
-      this.studentService.addStudent(this.student);
+      this.studentService.addStudent(this.student).subscribe({
+        next: () => this.router.navigate(['/students']),
+        error: (err) => {
+          console.error('Add failed:', err);
+          this.errorMessage = 'Failed to add student.';
+        }
+      });
     }
-    this.router.navigate(['/students']);
   }
 
   onCancel(): void {

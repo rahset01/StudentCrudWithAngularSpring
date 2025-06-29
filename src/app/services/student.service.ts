@@ -11,40 +11,39 @@ export class StudentService {
 
   constructor(private http: HttpClient) {}
 
-  private getAuthHeaders(): HttpHeaders {
-    const token = sessionStorage.getItem('token');
+  private getHeaders(): HttpHeaders {
     return new HttpHeaders({
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${sessionStorage.getItem('token')}`
     });
   }
 
   getStudents(): Observable<Student[]> {
-    return this.http.get<Student[]>(this.apiUrl, {
-      headers: this.getAuthHeaders(),
-    });
-  }
-
-  getStudentById(id: number): Observable<Student> {
-    return this.http.get<Student>(`${this.apiUrl}/${id}`, {
-      headers: this.getAuthHeaders(),
-    });
+    return this.http.get<Student[]>(this.apiUrl, { headers: this.getHeaders() });
   }
 
   addStudent(student: Student): Observable<Student> {
-    return this.http.post<Student>(this.apiUrl, student, {
-      headers: this.getAuthHeaders(),
-    });
-  }
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${sessionStorage.getItem('token')}`
+  });
+  return this.http.post<Student>(this.apiUrl, student, { headers });
+}
 
-  updateStudent(student: Student): Observable<Student> {
-    return this.http.put<Student>(`${this.apiUrl}/${student.id}`, student, {
-      headers: this.getAuthHeaders(),
-    });
-  }
+updateStudent(student: Student): Observable<Student> {
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${sessionStorage.getItem('token')}`
+  });
+  return this.http.put<Student>(`${this.apiUrl}/${student.id}`, student, { headers });
+}
+
+getStudentById(id: number): Observable<Student> {
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${sessionStorage.getItem('token')}`
+  });
+  return this.http.get<Student>(`${this.apiUrl}/${id}`, { headers });
+}
+
 
   deleteStudent(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`, {
-      headers: this.getAuthHeaders(),
-    });
+    return this.http.delete(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
   }
 }

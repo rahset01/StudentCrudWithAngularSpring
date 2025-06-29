@@ -1,19 +1,63 @@
 <div class="student-form">
   <h2>{{ isEdit ? 'Edit' : 'Add' }} Student</h2>
-  <form (ngSubmit)="onSubmit()" #studentForm="ngForm">
+
+  <form #studentForm="ngForm" (ngSubmit)="onSubmit()">
+    <!-- Name Field -->
     <div>
-      <label>Name</label>
-      <input type="text" name="name" [(ngModel)]="student.name" required />
+      <label for="name"><span class="required">*</span> Name</label>
+      <input
+        id="name"
+        type="text"
+        name="name"
+        [(ngModel)]="student.name"
+        required
+        #nameField="ngModel"
+      />
+      <p class="error" *ngIf="nameField.invalid && nameField.touched">
+        Name is required
+      </p>
     </div>
+
+    <!-- Email Field -->
     <div>
-      <label>Email</label>
-      <input type="email" name="email" [(ngModel)]="student.email" required />
+      <label for="email"><span class="required">*</span> Email</label>
+      <input
+        id="email"
+        type="email"
+        name="email"
+        [(ngModel)]="student.email"
+        required
+        email
+        #emailField="ngModel"
+      />
+      <p class="error" *ngIf="emailField.invalid && emailField.touched">
+        <span *ngIf="emailField.errors?.['required']">Email is required</span>
+        <span *ngIf="emailField.errors?.['email']">Invalid email format</span>
+      </p>
     </div>
+
+    <!-- Course Field -->
     <div>
-      <label>Course</label>
-      <input type="text" name="course" [(ngModel)]="student.course" required />
+      <label for="course"><span class="required">*</span> Course</label>
+      <input
+        id="course"
+        type="text"
+        name="course"
+        [(ngModel)]="student.course"
+        required
+        #courseField="ngModel"
+      />
+      <p class="error" *ngIf="courseField.invalid && courseField.touched">
+        Course is required
+      </p>
     </div>
-    <button type="submit" [disabled]="!studentForm.valid">Save</button>
-    <button type="button" (click)="onCancel()">Cancel</button>
+
+    <!-- Action Buttons -->
+    <div class="form-actions">
+      <button type="submit" [disabled]="studentForm.invalid">
+        {{ isEdit ? 'Update' : 'Save' }}
+      </button>
+      <button type="button" (click)="onCancel()">Cancel</button>
+    </div>
   </form>
 </div>
