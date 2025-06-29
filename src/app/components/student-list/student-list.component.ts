@@ -1,7 +1,8 @@
-// student-list.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
 import { Student } from '../../models/student.model';
 import { StudentService } from '../../services/student.service';
 
@@ -19,11 +20,20 @@ export class StudentListComponent implements OnInit {
 
   constructor(
     private studentService: StudentService,
-    private router: Router
+    private router: Router,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
     this.loadStudents();
+  }
+
+  showNotification(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      horizontalPosition: 'center',
+      verticalPosition: 'top'
+    });
   }
 
   loadStudents(): void {
@@ -51,10 +61,13 @@ export class StudentListComponent implements OnInit {
 
   onDelete(id: number): void {
     this.studentService.deleteStudent(id).subscribe({
-      next: () => this.loadStudents(),
+      next: () => {
+        this.showNotification('Student deleted successfully!');
+        this.loadStudents();
+      },
       error: (err) => {
         console.error('Delete failed:', err);
-        this.errorMessage = 'Failed to delete student.';
+        this.showNotification('Failed to delete student.');
       }
     });
   }

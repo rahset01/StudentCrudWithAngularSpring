@@ -1,37 +1,37 @@
 import { Component } from '@angular/core';
+import { FormsModule, NgForm } from '@angular/forms';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { FormsModule } from '@angular/forms'; // ✅ Import FormsModule
-import { CommonModule } from '@angular/common'; // ✅ For ngIf, ngFor, etc.
 
 @Component({
   selector: 'app-login',
-  standalone: true, // ✅ Ensure standalone is enabled
-  imports: [CommonModule, FormsModule], // ✅ Add FormsModule here
+  standalone: true,
+  imports: [CommonModule, FormsModule], // Important
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
-  email: string = '';
-  password: string = '';
-  loginFailed: boolean = false;
-
-  includesEmailError: boolean = false;
-  missingSpecialCharError: boolean = false;
+  email = '';
+  password = '';
+  loginFailed = false;
+  includesEmailError = false;
+  missingSpecialCharError = false;
+  formSubmitted = false;
 
   constructor(private authService: AuthService, private router: Router) {}
 
-  onSubmit(): void {
+  onSubmit(form: NgForm): void {
+    this.formSubmitted = true;
+    if (form.invalid) return;
+
     this.includesEmailError = this.password.toLowerCase().includes(this.email.toLowerCase());
     this.missingSpecialCharError = !/[!@#$%^&*(),.?":{}|<>]/.test(this.password);
 
-    if (this.includesEmailError || this.missingSpecialCharError) {
-      return;
-    }
+    if (this.includesEmailError || this.missingSpecialCharError) return;
 
     this.authService.login(this.email, this.password).subscribe({
       next: () => {
-        this.loginFailed = false;
         this.router.navigate(['/students']);
       },
       error: () => {

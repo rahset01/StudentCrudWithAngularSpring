@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
 import { Student } from '../../models/student.model';
 import { StudentService } from '../../services/student.service';
 
@@ -26,7 +28,8 @@ export class StudentFormComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private studentService: StudentService
+    private studentService: StudentService,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -43,21 +46,35 @@ export class StudentFormComponent implements OnInit {
     }
   }
 
+  showNotification(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      horizontalPosition: 'center',
+      verticalPosition: 'top'
+    });
+  }
+
   onSubmit(): void {
     if (this.isEdit) {
       this.studentService.updateStudent(this.student).subscribe({
-        next: () => this.router.navigate(['/students']),
+        next: () => {
+          this.showNotification('Student updated successfully!');
+          this.router.navigate(['/students']);
+        },
         error: (err) => {
           console.error('Update failed:', err);
-          this.errorMessage = 'Failed to update student.';
+          this.showNotification('Failed to update student.');
         }
       });
     } else {
       this.studentService.addStudent(this.student).subscribe({
-        next: () => this.router.navigate(['/students']),
+        next: () => {
+          this.showNotification('Student added successfully!');
+          this.router.navigate(['/students']);
+        },
         error: (err) => {
           console.error('Add failed:', err);
-          this.errorMessage = 'Failed to add student.';
+          this.showNotification('Failed to add student.');
         }
       });
     }
